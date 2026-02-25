@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+python-dotenv
+langchain
+langchain-openai
+langchain-pinecone
+langchain-groq
+langchain-tavily
+langgraph
+langgraph-checkpoint-postgres
+psycopg[binary,pool]
+pinecone-client
+markitdown
+PyPDF2
+langchain-core
+langchain-text-splitters
+
