@@ -87,14 +87,27 @@ async def ingest(thread_id: str, background_tasks: BackgroundTasks, file: Upload
             shutil.copyfileobj(file.file, f)
         
         text = ingestor.from_pdf(path)
-
-        docs = splitter.split_text_to_docs(text, {"thread_id": thread_id, "source": file.filename})
         
+        if not text or len(text.strip()) < 10:
+             raise HTTPException(status_code=400, detail="PDF seems empty or is a scanned image. OCR required.")
+
+        metadata = {"thread_id": thread_id, "source": file.filename}
+        docs = splitter.split_text_to_docs(text, metadata)
+        
+    
+        print(f"--- INGESTING: {len(docs)} chunks for Thread {thread_id} ---")
         vdb_manager.load_vectorStore(docs)
         
-        return {"status": "success", "message": f"Indexed {len(docs)} chunks", "thread_id": thread_id}
+        return {
+            "status": "success", 
+            "message": f"Successfully indexed {len(docs)} chunks from {file.filename}.", 
+            "thread_id": thread_id
+        }
+        
     except Exception as e:
+        print(f"!!! INGESTION ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         if os.path.exists(path):
             os.remove(path)
+
