@@ -13,6 +13,8 @@ pinecone-client
 markitdown
 markitdown[pdf]
 PyPDF2
+langchain-community
+pypdf
 langchain-core
 langchain-text-splitters
 python-multipart
