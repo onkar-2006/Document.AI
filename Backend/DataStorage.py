@@ -3,11 +3,11 @@ from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 class DataSplitter:
-    def __init__(self, chunk_size=800, chunk_overlap=150):
+    def __init__(self, chunk_size=1200, chunk_overlap=150):
         self.splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
-            separators=["\n\n", "\n", ". ", " "]
+            separators=["\n\n", ". ", " "]
         )
 
     def split_text_to_docs(self, raw_text, metadata):

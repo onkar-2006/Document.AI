@@ -33,9 +33,6 @@ async def eval_docs_node(state):
     docs = state.get("docs", [])
     if not docs:
         return {"verdict": "INCORRECT", "good_docs": []}
-    
-    # Simple check: if any doc exists, we'll call it 'AMBIGUOUS' to trigger a quick check
-    # This avoids complex JSON grading that might fail
     return {"verdict": "CORRECT", "good_docs": docs}
 
 async def rewrite_query_node(state):
@@ -45,12 +42,19 @@ async def rewrite_query_node(state):
 async def web_search_node(state):
     print("--- STEP: WEB SEARCH ---")
     try:
+
         results = await tavily.ainvoke({"query": state["question"]})
-        docs = [Document(page_content=r["content"]) for r in results]
+        
+        if isinstance(results, list):
+            docs = [Document(page_content=r.get("content", "")) for r in results if isinstance(r, dict)]
+        else:
+            docs = [Document(page_content=r.get("content", "")) for r in results.get("results", [])] 
         return {"web_docs": docs}
     except Exception as e:
+        
         print(f"Web Search Failed: {e}")
         return {"web_docs": []}
+
 
 async def refine_node(state):
     print("--- STEP: REFINE (SIMPLE) ---")
