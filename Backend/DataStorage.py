@@ -10,6 +10,7 @@ class DataSplitter:
             separators=["\n\n", ". ", " "]
         )
 
+
     def split_text_to_docs(self, raw_text, metadata):
         chunks = self.splitter.split_text(raw_text)
         documents = []

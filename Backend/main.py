@@ -10,7 +10,7 @@ def main():
 
     if sys.platform == 'win32':
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-        print("🔧 Windows Selector Policy enforced.")
+        print("Windows Selector Policy enforced.")
 
    
     from endpoint import app
@@ -25,6 +25,7 @@ def main():
     
     loop = asyncio.get_event_loop()
     loop.run_until_complete(server.serve())
+
 
 if __name__ == "__main__":
     main()

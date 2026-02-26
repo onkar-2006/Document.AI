@@ -25,18 +25,13 @@ class DataIngestion:
         """
         try:
             loader = WebBaseLoader(url)
-            
             docs = loader.load()
-      
             full_text = "\n".join([doc.page_content for doc in docs])
             
-    
             return " ".join(full_text.split()).strip()
             
         except Exception as e:
             print(f"Web Scraping Error: {e}")
             return ""
 
-    def from_office(self, file_path):
-        result = self.md_converter.convert(file_path)
-        return result.text_content
+

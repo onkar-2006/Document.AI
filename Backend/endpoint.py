@@ -137,3 +137,4 @@ async def ingest(
     except Exception as e:
         print(f"!!! INGESTION ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+

@@ -18,7 +18,7 @@ const Chat = () => {
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef(null);
 
-  // Auto-scroll to bottom when messages update
+  
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -67,7 +67,7 @@ const Chat = () => {
         <div className="thread-badge">Session: {threadId}</div>
       </header>
 
-      {/* Message Area */}
+  
       <div className="message-area scroll-custom">
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', color: '#64748b', marginTop: '20px' }}>
@@ -94,7 +94,7 @@ const Chat = () => {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input Area */}
+      
       <footer className="input-footer">
         <form onSubmit={handleChat} className="chat-form">
           <input 
@@ -114,3 +114,4 @@ const Chat = () => {
 };
 
 export default Chat;
+
