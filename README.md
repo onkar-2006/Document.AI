@@ -66,3 +66,35 @@ FINAL_RAG/
 │   ├── package.json        # Frontend dependencies
 │   └── vite.config.js      # Vite configuration
 └── .github/workflows/      # CI/CD automation
+
+
+1. Environment Setup
+Create a .env file in the Backend/ directory:
+
+# Code snippet
+
+OPENAI_API_KEY=your_openai_key
+PINECONE_API_KEY=your_pinecone_key
+PINECONE_INDEX_NAME=your_index_name
+TAVILY_API_KEY=your_tavily_key
+DATABASE_URL=your_postgres_connection_string
+
+2. Backend Installation
+Bash
+cd Backend
+pip install -r requirements.txt
+python main.py
+3. Frontend Installation
+Bash
+
+cd rag_frontend
+
+npm install
+npm run dev
+
+✨ Features
+Hybrid Ingestion: Supports both PDF file uploads and Website URL scraping.
+Self-Correction: Dynamically determines if the local knowledge base is enough to answer.
+Persistent Memory: Chat history is preserved across sessions via PostgreSQL.
+Streaming Responses: Real-time feedback during the agent's reasoning steps.
+
