@@ -1,7 +1,6 @@
 import os
 from markitdown import MarkItDown
-import os
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader, WebBaseLoader
 
 class DataIngestion:
     def __init__(self):
@@ -11,29 +10,33 @@ class DataIngestion:
         """Uses LangChain's PyPDFLoader for robust page-by-page extraction."""
         if not os.path.exists(file_path): 
             return "File not found."
-        
         try:
             loader = PyPDFLoader(file_path)
-            
             docs = loader.load()
-            
-            full_text = "\n".join([doc.page_content for doc in docs])
-
-            return full_text.strip()
-            
+            return "\n".join([doc.page_content for doc in docs]).strip()
         except Exception as e:
             print(f"Extraction Error with PyPDFLoader: {e}")
             return ""
 
-    def from_office(self, file_path):
-
-        from markitdown import MarkItDown
-        md = MarkItDown()
-
-        result = md.convert(file_path)
-        return result.text_content
-
     def from_url(self, url):
-        result = self.md_converter.convert(url)
-        return result.text_content
+        """
+        Uses LangChain's WebBaseLoader to scrape text content from a URL.
+        Note: Requires 'pip install beautifulsoup4'
+        """
+        try:
+            loader = WebBaseLoader(url)
+            
+            docs = loader.load()
+      
+            full_text = "\n".join([doc.page_content for doc in docs])
+            
     
+            return " ".join(full_text.split()).strip()
+            
+        except Exception as e:
+            print(f"Web Scraping Error: {e}")
+            return ""
+
+    def from_office(self, file_path):
+        result = self.md_converter.convert(file_path)
+        return result.text_content
