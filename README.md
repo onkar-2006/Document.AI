@@ -1,6 +1,123 @@
-.
-
-Document.AI
+# Document.AI
 This repository contains a full-stack Agentic Retrieval-Augmented Generation (RAG) application. 
 It utilizes a Corrective RAG (CRAG) strategy, intelligently deciding whether to answer from local vector storage or fall back to a live web search via Tavily when
 local data is insufficient.
+
+🏗️ System Architecture
+The project is split into a FastAPI backend and a React (Vite) frontend, orchestrated by LangGraph to manage complex agentic loops and state.
+
+🧠 The Agentic Flow (CRAG)
+Ingestion: User uploads a PDF or URL. Data is processed, chunked, and embedded.
+Retrieve: The system fetches relevant chunks from the Pinecone Vector Database.
+Evaluate: An LLM-based "Grader" node evaluates the quality of retrieved documents.
+
+Action Selection:
+Relevant: If documents are sufficient, the system generates an answer.
+Irrelevant/Ambiguous: The system triggers a Web Search (Tavily) to supplement missing information.
+Final Generate: The LLM synthesizes the final answer using the most accurate context.
+Persistence: User history and graph states are saved to a PostgreSQL database using a LangGraph Checkpointer.
+
+
+Gemini said
+Here is the comprehensive README.md file based on your project structure and tech stack. This file is designed to look professional on GitHub, providing a clear overview of the architecture and the Agentic RAG flow you've built.
+
+🤖 Agentic RAG System (CRAG & LangGraph)
+This repository contains a full-stack Agentic Retrieval-Augmented Generation (RAG) application. It utilizes a Corrective RAG (CRAG) strategy, intelligently deciding whether to answer from local vector storage or fall back to a live web search via Tavily when local data is insufficient.
+
+🏗️ System Architecture
+The project is split into a FastAPI backend and a React (Vite) frontend, orchestrated by LangGraph to manage complex agentic loops and state.
+
+🧠 The Agentic Flow (CRAG)
+Ingestion: User uploads a PDF or URL. Data is processed, chunked, and embedded.
+
+Retrieve: The system fetches relevant chunks from the Pinecone Vector Database.
+
+Evaluate: An LLM-based "Grader" node evaluates the quality of retrieved documents.
+
+Action Selection:
+
+Relevant: If documents are sufficient, the system generates an answer.
+
+Irrelevant/Ambiguous: The system triggers a Web Search (Tavily) to supplement missing information.
+
+Final Generate: The LLM synthesizes the final answer using the most accurate context.
+
+Persistence: User history and graph states are saved to a PostgreSQL database using a LangGraph Checkpointer.
+
+🛠️ Tech Stack
+
+Backend
+Language: Python 3.10+
+Orchestration: LangGraph (Agentic state management)
+Framework: FastAPI (High-performance API)
+Vector Database: Pinecone (Serverless Vector Search)
+SQL Database: PostgreSQL (Session & History persistence)
+Search Engine: Tavily AI (Search optimized for LLMs)
+Embeddings/LLM: OpenAI (text-embedding-3-small / GPT-4o)
+
+Frontend
+Framework: React.js with Vite
+Styling: Tailwind CSS / Lucide Icons
+HTTP Client: Axios
+
+```
+FINAL_RAG/
+├── Backend/                # Python FastAPI Logic
+│   ├── DataIngestion.py    # PDF & URL processing logic
+│   ├── DataStorage.py      # Text splitting & chunking
+│   ├── VectorStore.py      # Pinecone integration
+│   ├── rag_graph.py        # LangGraph workflow definition
+│   ├── graph_nodes.py      # CRAG node logic (Retrieve/Grade/Search)
+│   ├── endpoint.py         # API Route definitions
+│   ├── main.py             # Server entry point
+│   ├── requirements.txt    # Backend dependencies
+│   └── Dockerfile          # Deployment configuration
+├── rag_frontend/           # React + Vite Frontend
+│   ├── src/
+│   │   ├── components/     # UI Components (Chat, Setup)
+│   │   ├── assets/         # Styles & Images
+│   │   └── main.jsx        # Frontend entry point
+│   ├── package.json        # Frontend dependencies
+│   └── vite.config.js      # Vite configuration
+└── .github/workflows/      # CI/CD automation
+
+
+
+# 1. Environment Setup
+Create a .env file in the Backend/ directory:
+
+Code snippet
+
+OPENAI_API_KEY=your_openai_key
+PINECONE_API_KEY=your_pinecone_key
+PINECONE_INDEX_NAME=your_index_name
+TAVILY_API_KEY=your_tavily_key
+DATABASE_URL=your_postgres_connection_string
+
+
+2. Backend Installation
+Bash
+
+cd Backend
+pip install -r requirements.txt
+python main.py
+3. Frontend Installation
+Bash
+
+cd rag_frontend
+npm install
+npm run dev
+
+
+✨ Features
+Hybrid Ingestion: Supports both PDF file uploads and Website URL scraping.
+Self-Correction: Dynamically determines if the local knowledge base is enough to answer.
+Persistent Memory: Chat history is preserved across sessions via PostgreSQL.
+Streaming Responses: Real-time feedback during the agent's reasoning steps.
+
+
+
+
+
+
+
