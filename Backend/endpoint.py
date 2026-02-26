@@ -1,5 +1,5 @@
 import os, uuid, shutil
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException,Form, Optional
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from langchain_core.messages import HumanMessage
@@ -62,6 +62,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 @app.post("/chat")
 async def chat(request: ChatRequest):
     config = {"configurable": {"thread_id": request.thread_id}}
@@ -80,34 +81,59 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=f"Graph Error: {str(e)}")
 
 @app.post("/ingest")
-async def ingest(thread_id: str, background_tasks: BackgroundTasks, file: UploadFile = File(...)):
-    path = f"tmp_{uuid.uuid4()}_{file.filename}"
+async def ingest(
+    thread_id: str, 
+    background_tasks: BackgroundTasks, 
+    file: Optional[UploadFile] = File(None),  
+    url: Optional[str] = Form(None)          
+):
+    text = ""
+    source_name = ""
+    
     try:
-        with open(path, "wb") as f: 
-            shutil.copyfileobj(file.file, f)
-        
-        text = ingestor.from_pdf(path)
-        
-        if not text or len(text.strip()) < 10:
-             raise HTTPException(status_code=400, detail="PDF seems empty or is a scanned image. OCR required.")
 
-        metadata = {"thread_id": thread_id, "source": file.filename}
+        if file:
+            source_name = file.filename
+            path = f"tmp_{uuid.uuid4()}_{file.filename}"
+            with open(path, "wb") as f: 
+                shutil.copyfileobj(file.file, f)
+
+            if file.filename.lower().endswith('.pdf'):
+                text = ingestor.from_pdf(path)
+
+            elif file.filename.lower().endswith(('.docx', '.pptx', '.xlsx')):
+                text = ingestor.from_office(path)
+            else:
+
+                with open(path, "r", encoding="utf-8") as f:
+                    text = f.read()
+            
+            if os.path.exists(path):
+                os.remove(path)
+
+        elif url:
+            source_name = url
+            text = ingestor.from_url(url)
+
+        else:
+            raise HTTPException(status_code=400, detail="No file or URL provided.")
+
+        if not text or len(text.strip()) < 10:
+             raise HTTPException(status_code=400, detail="Content extraction failed or content too short.")
+
+        metadata = {"thread_id": thread_id, "source": source_name}
         docs = splitter.split_text_to_docs(text, metadata)
         
-    
-        print(f"--- INGESTING: {len(docs)} chunks for Thread {thread_id} ---")
+        print(f"--- INGESTING: {len(docs)} chunks from {source_name} ---")
         vdb_manager.load_vectorStore(docs)
         
         return {
             "status": "success", 
-            "message": f"Successfully indexed {len(docs)} chunks from {file.filename}.", 
-            "thread_id": thread_id
+            "message": f"Successfully indexed {len(docs)} chunks.", 
+            "thread_id": thread_id,
+            "source": source_name
         }
         
     except Exception as e:
         print(f"!!! INGESTION ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        if os.path.exists(path):
-            os.remove(path)
-

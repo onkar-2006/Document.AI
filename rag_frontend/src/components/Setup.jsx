@@ -6,33 +6,41 @@ import axios from 'axios';
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const Setup = ({ source }) => {
+
   const navigate = useNavigate();
   const [val, setVal] = useState("");
   const [status, setStatus] = useState("");
 
-  const handleSubmit = async () => {
-    // 1. Generate a unique thread_id for this session
-    const threadId = `user_${Math.random().toString(36).substring(7)}`;
-    setStatus("Processing...");
+const handleSubmit = async () => {
+  const threadId = `user_${Math.random().toString(36).substring(7)}`;
+  setStatus("Processing...");
 
-    try {
-      if (source === 'file') {
-        const formData = new FormData();
-        formData.append("file", val);
-        // 2. Added thread_id as a query parameter to match backend
-        await axios.post(`${API_BASE}/ingest?thread_id=${threadId}`, formData);
-      } else {
-        // Updated endpoints to match your current backend structure
-        const endpoint = source === 'youtube' ? '/ingest/youtube' : '/ingest/url';
-        await axios.post(`${API_BASE}${endpoint}?thread_id=${threadId}`, { url: val });
-      }
-      
-      // 3. Pass the threadId to the Chat component via state
-      navigate('/chat', { state: { threadId } });
-    } catch (err) { 
-      setStatus("Error: Make sure the backend is running."); 
+  try {
+
+    const formData = new FormData();
+
+    formData.append("thread_id", threadId);
+
+    if (source === 'file') {
+
+      formData.append("file", val); 
+
+    } else {
+      formData.append("url", val); 
     }
-  };
+
+    await axios.post(`${API_BASE}/ingest?thread_id=${threadId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    navigate('/chat', { state: { threadId } });
+  } catch (err) {
+    console.error(err);
+    setStatus("Error: Ingestion failed. Check backend logs.");
+  }
+};
 
   if (!source) return <div className="fullscreen-center"><Link to="/" className="btn-primary" style={{width:'auto', padding:'10px 20px'}}>Please select a source first</Link></div>;
 
