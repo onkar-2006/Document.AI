@@ -12,7 +12,7 @@ This repository contains a full-stack **Agentic Retrieval-Augmented Generation (
 
 The project is split into a **FastAPI** backend and a **React (Vite)** frontend, orchestrated by **LangGraph** to manage complex agentic loops and state.
 
-![System Architecture](./Backend/assets/architecture_flow.png)
+![System Architecture](./Blank diagram.png)
 
 ### 🧠 The Agentic Flow (CRAG)
 1. **Ingestion**: User uploads a PDF or URL. Data is processed, chunked, and embedded.
