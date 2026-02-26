@@ -1,6 +1,6 @@
 import os, uuid, shutil
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException,Form
-from typing import Optional
+from typing_extensions import Optional
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from langchain_core.messages import HumanMessage
