@@ -10,36 +10,21 @@ const Setup = ({ source }) => {
   const navigate = useNavigate();
   const [val, setVal] = useState("");
   const [status, setStatus] = useState("");
-
 const handleSubmit = async () => {
   const threadId = `user_${Math.random().toString(36).substring(7)}`;
-  setStatus("Processing...");
+  const formData = new FormData();
+  
+  const uploadUrl = `${API_BASE}/ingest?thread_id=${threadId}`;
 
-  try {
-
-    const formData = new FormData();
-
-    formData.append("thread_id", threadId);
-
-    if (source === 'file') {
-
-      formData.append("file", val); 
-
-    } else {
-      formData.append("url", val); 
-    }
-
-    await axios.post(`${API_BASE}/ingest?thread_id=${threadId}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-
-    navigate('/chat', { state: { threadId } });
-  } catch (err) {
-    console.error(err);
-    setStatus("Error: Ingestion failed. Check backend logs.");
+  if (source === 'file') {
+    formData.append("file", val); 
+  } else {
+    formData.append("url", val); 
   }
+
+  await axios.post(uploadUrl, formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
 };
 
   if (!source) return <div className="fullscreen-center"><Link to="/" className="btn-primary" style={{width:'auto', padding:'10px 20px'}}>Please select a source first</Link></div>;
