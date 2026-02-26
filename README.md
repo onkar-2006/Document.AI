@@ -2,7 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://rag-deployment-backend-latest.onrender.com)
 
-> **Live Application:** [https://rag-deployment-backend-latest.onrender.com](https://rag-deployment-backend-latest.onrender.com)
+> **Live Application:** [https://rag-deployment-frontend-latest.onrender.com/](https://rag-deployment-frontend-latest.onrender.com/)
 
 This repository contains a full-stack **Agentic Retrieval-Augmented Generation (RAG)** application. It utilizes a **Corrective RAG (CRAG)** strategy, intelligently deciding whether to answer from local vector storage or fall back to a live web search via Tavily when local data is insufficient.
 
