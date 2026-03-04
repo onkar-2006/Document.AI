@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, List, MessageSquare, Loader2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle, List, MessageSquare, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -12,6 +12,9 @@ const Setup = ({ source }) => {
   const [chunks, setChunks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeThreadId, setActiveThreadId] = useState(null);
+  
+  // NEW: State to track which chunk index is expanded
+  const [expandedChunk, setExpandedChunk] = useState(null);
 
   const handleSubmit = async () => {
     const threadId = `user_${Math.random().toString(36).substring(7)}`;
@@ -38,7 +41,6 @@ const Setup = ({ source }) => {
       setStatus("Indexing Complete! Chunks stored in Vector DB.");
     } catch (err) {
       setStatus("Error: Ingestion failed. Please try again.");
-      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -46,6 +48,10 @@ const Setup = ({ source }) => {
 
   const handleStartChat = () => {
     navigate('/chat', { state: { threadId: activeThreadId } });
+  }
+
+  const toggleChunk = (index) => {
+    setExpandedChunk(expandedChunk === index ? null : index);
   }
 
   if (!source) return <div className="fullscreen-center"><Link to="/" className="btn-primary" style={{width:'auto', padding:'10px 20px'}}>Please select a source first</Link></div>;
@@ -75,21 +81,12 @@ const Setup = ({ source }) => {
           )}
 
           {!activeThreadId ? (
-            <button 
-              onClick={handleSubmit} 
-              className="btn-primary" 
-              disabled={!val || loading}
-            >
+            <button onClick={handleSubmit} className="btn-primary" disabled={!val || loading}>
               {loading ? <Loader2 className="spin" size={20} /> : "Process & Chunk Document"}
             </button>
           ) : (
-            <button 
-              onClick={handleStartChat} 
-              className="btn-primary btn-success-pulse" 
-              style={{ background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-            >
-              <MessageSquare size={18} />
-              Start Conversation
+            <button onClick={handleStartChat} className="btn-primary btn-success-pulse" style={{ background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <MessageSquare size={18} /> Start Conversation
             </button>
           )}
         </div>
@@ -105,9 +102,18 @@ const Setup = ({ source }) => {
                 <p style={{marginBottom: '12px'}}><List size={14} /> <strong>{chunks.length} Knowledge Segments:</strong></p>
                 <div className="chunk-scroll">
                   {chunks.map((c, i) => (
-                    <div key={i} className="chunk-item-mini">
-                       <span className="chunk-index">CHUNK {i+1}</span> 
-                       <span style={{opacity: 0.8}}>"{c.substring(0, 120)}..."</span>
+                    <div key={i} className={`chunk-container-interactive ${expandedChunk === i ? 'is-expanded' : ''}`}>
+                      <div className="chunk-item-clickable" onClick={() => toggleChunk(i)}>
+                         <span className="chunk-index">CHUNK {i+1}</span> 
+                         <span className="chunk-preview-text">"{c.substring(0, 60)}..."</span>
+                         {expandedChunk === i ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      </div>
+                      
+                      {expandedChunk === i && (
+                        <div className="chunk-full-content">
+                          {c}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
