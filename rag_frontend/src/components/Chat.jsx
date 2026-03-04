@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Send, Bot, User, ArrowLeft, Loader2, Info } from 'lucide-react';
+import { Send, ArrowLeft, Loader2, Info } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import axios from 'axios';
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -13,7 +15,7 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showSources, setShowSources] = useState(null); // Track which message's sources to show
+  const [showSources, setShowSources] = useState(null); 
   const chatEndRef = useRef(null);
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
@@ -36,7 +38,7 @@ const Chat = () => {
       setMessages(prev => [...prev, { 
         role: 'bot', 
         content: response.data.answer,
-        sources: response.data.sources // NEW: Store retrieval metadata
+        sources: response.data.sources 
       }]);
     } catch (err) {
       setMessages(prev => [...prev, { role: 'bot', content: "Error connecting to server." }]);
@@ -48,7 +50,7 @@ const Chat = () => {
   return (
     <div className="chat-layout">
       <header className="chat-nav">
-        <button onClick={() => navigate('/')} className="nav-back-icon" style={{ background: 'none', border: 'none' }}>
+        <button onClick={() => navigate('/')} className="nav-back-icon" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
           <ArrowLeft size={20} />
         </button>
         <h1 className="nav-title">Conversation</h1>
@@ -60,9 +62,12 @@ const Chat = () => {
           <div key={i} className={`message-row ${m.role === 'user' ? 'row-user' : 'row-bot'}`}>
             <div className={`bubble ${m.role === 'user' ? 'bubble-user' : 'bubble-bot'}`}>
               <div className="bubble-text">
-                {m.content}
+                {/* Markdown Rendering for Tables and Formatting */}
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {m.content}
+                </ReactMarkdown>
                 
-                {/* NEW: Source Attribution & Scores */}
+                {/* Source Attribution & Scores */}
                 {m.sources && m.sources.length > 0 && (
                   <div className="sources-section">
                     <button 
@@ -91,14 +96,26 @@ const Chat = () => {
             </div>
           </div>
         ))}
-        {loading && <div className="loader-container"><Loader2 className="spin" size={24} /></div>}
+        {loading && (
+          <div className="message-row row-bot">
+             <div className="loader-container"><Loader2 className="spin" size={24} color="#6366f1" /></div>
+          </div>
+        )}
         <div ref={chatEndRef} />
       </div>
 
       <footer className="input-footer">
         <form onSubmit={handleChat} className="chat-form">
-          <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about the document..." className="main-input" disabled={loading} />
-          <button type="submit" className="btn-send" disabled={loading || !input.trim()}><Send size={20} /></button>
+          <input 
+            value={input} 
+            onChange={(e) => setInput(e.target.value)} 
+            placeholder="Ask about the document..." 
+            className="main-input" 
+            disabled={loading} 
+          />
+          <button type="submit" className="btn-send" disabled={loading || !input.trim()}>
+            <Send size={20} />
+          </button>
         </form>
       </footer>
     </div>

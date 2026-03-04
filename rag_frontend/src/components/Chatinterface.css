@@ -476,3 +476,44 @@ body {
   background: var(--glass-border);
   border-radius: 10px;
 }
+
+/* Table Formatting */
+.bubble-text table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 0.9rem;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+
+.bubble-text th {
+  background: var(--bg-subtle);
+  color: var(--accent);
+  text-align: left;
+  padding: 10px;
+  border-bottom: 2px solid var(--glass-border);
+}
+
+.bubble-text td {
+  padding: 10px;
+  border-bottom: 1px solid var(--glass-border);
+  color: var(--text-main);
+}
+
+/* Bold Highlight Styling */
+.bubble-text strong {
+  color: var(--text-main);
+  background: rgba(99, 102, 241, 0.1); /* Indigo tint */
+  padding: 0px 4px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+/* List Styling */
+.bubble-text ul, .bubble-text ol {
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
