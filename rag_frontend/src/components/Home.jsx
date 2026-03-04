@@ -20,10 +20,6 @@ const Home = ({ setSource }) => {
             <div className="icon-wrapper icon-blue"><FileText size={40} /></div>
             <h3 className="card-title">Document</h3>
           </button>
-          <button onClick={() => handleSelect('web')} className="card-item">
-            <div className="icon-wrapper icon-dark"><Link size={40} /></div>
-            <h3 className="card-title">Website</h3>
-          </button>
         </div>
       </div>
     </div>
