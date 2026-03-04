@@ -1,4 +1,4 @@
-from typing import List, TypedDict, Annotated
+from typing import List, TypedDict, Annotated, Optional
 from langchain_core.documents import Document
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
@@ -15,6 +15,7 @@ class State(TypedDict):
     web_docs: List[Document]
     web_query: str
     answer: str
+    retrieval_metadata: List[dict] 
 
 class DocEvalScore(BaseModel):
     score: float

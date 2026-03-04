@@ -185,6 +185,50 @@ body {
 
 .back-link:hover { color: var(--text-main); }
 
+/* --- NEW: Ingestion Chunk Preview --- */
+.status-area {
+  margin-top: 24px;
+  text-align: left;
+  animation: pageFadeIn 0.4s ease-out;
+}
+
+.chunk-list-preview {
+  margin-top: 16px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.chunk-list-preview p {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.chunk-scroll {
+  max-height: 120px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chunk-item-mini {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: white;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.03);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* --- Chat Interface --- */
 .chat-layout {
   height: 100vh;
@@ -254,6 +298,77 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
+}
+
+/* --- NEW: Retrieval Scores & Sources UI --- */
+.sources-section {
+  margin-top: 14px;
+  border-top: 1px dashed var(--glass-border);
+  padding-top: 12px;
+}
+
+.btn-show-sources {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.btn-show-sources:hover {
+  background: #eef2ff;
+}
+
+.sources-dropdown {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: slideIn 0.2s ease-out;
+}
+
+.source-card {
+  background: var(--bg-subtle);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.source-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.score-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: #dcfce7;
+  color: #166534;
+  padding: 2px 8px;
+  border-radius: 100px;
+}
+
+.source-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.source-snippet {
+  font-size: 0.8rem;
+  color: var(--text-main);
+  line-height: 1.4;
+  font-style: italic;
 }
 
 /* --- Input Area --- */

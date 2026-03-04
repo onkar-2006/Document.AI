@@ -10,14 +10,24 @@ class DataSplitter:
             separators=["\n\n", ". ", " "]
         )
 
-
     def split_text_to_docs(self, raw_text, metadata):
+        """
+        Splits raw text into LangChain Documents.
+        Returns:
+            list: A list of Document objects.
+        """
         chunks = self.splitter.split_text(raw_text)
         documents = []
+        
         for i, chunk in enumerate(chunks):
             doc = Document(
                 page_content=chunk,
-                metadata={**metadata, "chunk_id": i, "unique_id": str(uuid.uuid4())}
+                metadata={
+                    **metadata, 
+                    "chunk_id": i, 
+                    "unique_id": str(uuid.uuid4())
+                }
             )
             documents.append(doc)
+            
         return documents

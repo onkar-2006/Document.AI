@@ -18,7 +18,7 @@ class VectorStoreManager:
         self.pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
     def get_session_retriever(self, thread_id: str):
-        # Explicitly connect to the existing index
+        """Standard retriever for LangGraph nodes (text only)."""
         vectorstore = PineconeVectorStore(
             index_name=self.index_name, 
             embedding=self.embeddings,
@@ -34,10 +34,26 @@ class VectorStoreManager:
             }
         )
 
+    def get_docs_with_scores(self, query: str, thread_id: str, k: int = 5):
+        """
+        NEW METHOD: Retrieves documents AND their cosine similarity scores.
+        Required for showing the retrieval confidence on the frontend.
+        """
+        vectorstore = PineconeVectorStore(
+            index_name=self.index_name, 
+            embedding=self.embeddings,
+            pinecone_api_key=os.getenv("PINECONE_API_KEY")
+        )
+        
+        # similarity_search_with_score returns List[Tuple[Document, float]]
+        return vectorstore.similarity_search_with_score(
+            query, 
+            filter={"thread_id": thread_id}, 
+            k=k
+        )
+
     def load_vectorStore(self, docs):
-        """
-        Uploads documents to Pinecone. 
-        """
+        """Uploads documents to Pinecone."""
         if not docs:
             print("DEBUG: No documents to load into Pinecone.")
             return

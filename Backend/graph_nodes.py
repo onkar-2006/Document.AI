@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 llm_json = ChatOpenAI(
     model="openai/gpt-oss-120b", 
     openai_api_key=os.getenv("OPENROUTER_API_KEY"),
@@ -21,11 +20,28 @@ llm_json = ChatOpenAI(
 tavily = TavilySearch(max_results=3)
 
 async def retrieve_node(state, config, vdb_manager):
-    print("--- STEP: RETRIEVE ---")
+    """
+    Modified to retrieve documents AND cosine similarity scores.
+    Stores metadata for the frontend.
+    """
+    print("--- STEP: RETRIEVE WITH SCORES ---")
     tid = config["configurable"].get("thread_id")
-    retriever = vdb_manager.get_session_retriever(tid)
-    docs = await retriever.ainvoke(state["question"])
-    return {"docs": docs}
+    
+    # Using the new method we created in VectorStoreManager
+    docs_with_scores = vdb_manager.get_docs_with_scores(state["question"], tid)
+    
+    docs = []
+    retrieval_metadata = []
+    
+    for doc, score in docs_with_scores:
+        docs.append(doc)
+        retrieval_metadata.append({
+            "content": doc.page_content,
+            "score": round(float(score), 4),  # Cosine similarity score
+            "source": doc.metadata.get("source", "Unknown")
+        })
+    
+    return {"docs": docs, "retrieval_metadata": retrieval_metadata}
 
 async def eval_docs_node(state):
     print("--- STEP: EVALUATE ---")
@@ -41,27 +57,24 @@ async def rewrite_query_node(state):
 
 
 async def web_search_node(state):
-
     print("--- STEP: WEB SEARCH ---")
     try:
-
         results = await tavily.ainvoke({"query": state["question"]})
         
         if isinstance(results, list):
-
             docs = [Document(page_content=r.get("content", "")) for r in results if isinstance(r, dict)]
         else:
             docs = [Document(page_content=r.get("content", "")) for r in results.get("results", [])] 
 
         return {"web_docs": docs}
     except Exception as e:
-        
         print(f"Web Search Failed: {e}")
         return {"web_docs": []}
 
 
 async def refine_node(state):
-    print("--- STEP: REFINE (SIMPLE) ---")
+    print("--- STEP: REFINE ---")
+    # Priority: Local docs (good_docs) -> Web search results
     docs = state.get("good_docs") or state.get("web_docs") or []
     context = "\n\n".join([d.page_content for d in docs])
     return {"refined_context": context[:3000]} 
@@ -88,5 +101,3 @@ async def generate_node(state):
         "question": state["question"]
     })
     return {"answer": out.content}
-
-

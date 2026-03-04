@@ -1,5 +1,5 @@
 import os, uuid, shutil
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException,Form
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, Form
 from typing import Optional
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
@@ -50,7 +50,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-
 origins = [
     "http://localhost:5173",
     "https://rag-deployment-frontend-latest.onrender.com", 
@@ -70,16 +69,23 @@ async def chat(request: ChatRequest):
     inputs = {"question": request.question} 
     
     try:
-    
         res = await app.state.runnable.ainvoke(inputs, config=config)
         
         final_answer = res.get("answer", "I processed your request but couldn't generate a specific answer.")
         
-        return {"answer": final_answer, "thread_id": request.thread_id}
+        # NEW: Extract retrieval metadata (chunks + scores) from the graph state
+        sources = res.get("retrieval_metadata", [])
+        
+        return {
+            "answer": final_answer, 
+            "thread_id": request.thread_id,
+            "sources": sources  # Sending scores to frontend
+        }
     
     except Exception as e:
         print(f"!!! GRAPH EXECUTION ERROR: {e}")
         raise HTTPException(status_code=500, detail=f"Graph Error: {str(e)}")
+
 
 @app.post("/ingest")
 async def ingest(
@@ -92,7 +98,6 @@ async def ingest(
     source_name = ""
     
     try:
-
         if file:
             source_name = file.filename
             path = f"tmp_{uuid.uuid4()}_{file.filename}"
@@ -101,11 +106,9 @@ async def ingest(
 
             if file.filename.lower().endswith('.pdf'):
                 text = ingestor.from_pdf(path)
-
             elif file.filename.lower().endswith(('.docx', '.pptx', '.xlsx')):
                 text = ingestor.from_office(path)
             else:
-
                 with open(path, "r", encoding="utf-8") as f:
                     text = f.read()
             
@@ -115,7 +118,6 @@ async def ingest(
         elif url:
             source_name = url
             text = ingestor.from_url(url)
-
         else:
             raise HTTPException(status_code=400, detail="No file or URL provided.")
 
@@ -128,14 +130,17 @@ async def ingest(
         print(f"--- INGESTING: {len(docs)} chunks from {source_name} ---")
         vdb_manager.load_vectorStore(docs)
         
+        # NEW: Create a list of chunk texts to show on the frontend during indexing
+        chunks_preview = [doc.page_content for doc in docs]
+        
         return {
             "status": "success", 
             "message": f"Successfully indexed {len(docs)} chunks.", 
             "thread_id": thread_id,
-            "source": source_name
+            "source": source_name,
+            "chunks": chunks_preview  # Sending chunks to frontend
         }
         
     except Exception as e:
         print(f"!!! INGESTION ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
