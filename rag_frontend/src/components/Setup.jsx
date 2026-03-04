@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, List } from 'lucide-react';
+import { ArrowLeft, CheckCircle, List, MessageSquare, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -9,11 +9,15 @@ const Setup = ({ source }) => {
   const navigate = useNavigate();
   const [val, setVal] = useState("");
   const [status, setStatus] = useState("");
-  const [chunks, setChunks] = useState([]); // NEW: Store chunks for preview
+  const [chunks, setChunks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [activeThreadId, setActiveThreadId] = useState(null);
 
   const handleSubmit = async () => {
     const threadId = `user_${Math.random().toString(36).substring(7)}`;
-    setStatus("Processing & Chunking...");
+    setLoading(true);
+    setStatus("Analyzing & Splitting Document...");
+    setChunks([]);
 
     try {
       const formData = new FormData();
@@ -29,19 +33,19 @@ const Setup = ({ source }) => {
         headers: { "Content-Type": "multipart/form-data" }
       });
       
-      // NEW: Show chunks created
       setChunks(response.data.chunks || []);
-      setStatus("Indexing Complete!");
-
-      // Wait 2 seconds so user can see the chunks, then navigate
-      setTimeout(() => {
-        navigate('/chat', { state: { threadId } });
-      }, 2500);
-
+      setActiveThreadId(threadId);
+      setStatus("Indexing Complete! Chunks stored in Vector DB.");
     } catch (err) {
-      setStatus("Error: Ingestion failed.");
-      console.error("Ingestion Error:", err.response?.data || err.message);
+      setStatus("Error: Ingestion failed. Please try again.");
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  const handleStartChat = () => {
+    navigate('/chat', { state: { threadId: activeThreadId } });
   }
 
   if (!source) return <div className="fullscreen-center"><Link to="/" className="btn-primary" style={{width:'auto', padding:'10px 20px'}}>Please select a source first</Link></div>;
@@ -51,24 +55,60 @@ const Setup = ({ source }) => {
       <button onClick={() => navigate('/')} className="back-link"><ArrowLeft size={20} /> Back</button>
       <div className="setup-container">
         <h2 className="setup-title">Configure {source}</h2>
+        
         <div className="form-group">
           {source === 'file' ? (
-            <input type="file" onChange={(e) => setVal(e.target.files[0])} className="custom-file-input" />
+            <input 
+              type="file" 
+              onChange={(e) => setVal(e.target.files[0])} 
+              className="custom-file-input" 
+              disabled={loading || activeThreadId}
+            />
           ) : (
-            <input value={val} onChange={(e) => setVal(e.target.value)} placeholder="Enter URL" className="custom-url-input" />
+            <input 
+              value={val} 
+              onChange={(e) => setVal(e.target.value)} 
+              placeholder="Enter URL" 
+              className="custom-url-input" 
+              disabled={loading || activeThreadId}
+            />
           )}
-          <button onClick={handleSubmit} className="btn-primary" disabled={!val}>Initialize Chat</button>
+
+          {!activeThreadId ? (
+            <button 
+              onClick={handleSubmit} 
+              className="btn-primary" 
+              disabled={!val || loading}
+            >
+              {loading ? <Loader2 className="spin" size={20} /> : "Process & Chunk Document"}
+            </button>
+          ) : (
+            <button 
+              onClick={handleStartChat} 
+              className="btn-primary btn-success-pulse" 
+              style={{ background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            >
+              <MessageSquare size={18} />
+              Start Conversation
+            </button>
+          )}
         </div>
         
         {status && (
           <div className="status-area">
-            <p className="status-text">{status}</p>
+            <p className="status-text" style={{ color: activeThreadId ? '#10b981' : 'var(--accent)', fontWeight: '600' }}>
+              {status}
+            </p>
+            
             {chunks.length > 0 && (
-              <div className="chunk-list-preview">
-                <p><List size={14} /> <strong>{chunks.length} chunks created:</strong></p>
+              <div className={`chunk-list-preview ${activeThreadId ? 'chunk-list-ready' : ''}`}>
+                <p style={{marginBottom: '12px'}}><List size={14} /> <strong>{chunks.length} Knowledge Segments:</strong></p>
                 <div className="chunk-scroll">
-                  {chunks.slice(0, 3).map((c, i) => (
-                    <div key={i} className="chunk-item-mini">"{c.substring(0, 80)}..."</div>
+                  {chunks.map((c, i) => (
+                    <div key={i} className="chunk-item-mini">
+                       <span className="chunk-index">CHUNK {i+1}</span> 
+                       <span style={{opacity: 0.8}}>"{c.substring(0, 120)}..."</span>
+                    </div>
                   ))}
                 </div>
               </div>
